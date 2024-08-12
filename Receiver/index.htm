@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalR Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.18/signalr.min.js"></script>
+</head>
+<body>
+    <h1>Stock Prices</h1>
+    <div id="stockPrices"></div>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7091/hubs/stock")
+            .build();
+
+        connection.on("ReceiveStockPrice", (stockName, stockPrice) => {
+            const stockPricesDiv = document.getElementById("stockPrices");
+            const newPrice = document.createElement("div");
+            newPrice.textContent = `Stock received: ${stockName} - ${stockPrice}`;
+            stockPricesDiv.appendChild(newPrice);
+        });
+
+        connection.start()
+            .then(() => {
+                console.log("SignalR connection started.");
+            })
+            .catch(err => {
+                console.error("Error connecting to SignalR: ", err);
+            });
+
+        window.addEventListener("beforeunload", () => {
+            connection.stop().then(() => {
+                console.log("SignalR connection stopped.");
+            }).catch(err => {
+                console.error("Error stopping SignalR connection: ", err);
+            });
+        });
+    </script>
+</body>
+</html>
